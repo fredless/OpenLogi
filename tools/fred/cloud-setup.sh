@@ -26,6 +26,8 @@ APT_PACKAGES=(
   libudev-dev gcc g++ clang libfontconfig-dev libwayland-dev
   libxkbcommon-x11-dev libx11-xcb-dev libssl-dev libzstd-dev pkg-config
   shellcheck shfmt unzip curl
+  # The C cross compiler `ring` needs for `cargo xtask ci clippy-windows`.
+  gcc-mingw-w64-x86-64
 )
 missing=()
 for pkg in "${APT_PACKAGES[@]}"; do
@@ -50,7 +52,9 @@ fi
 log "rustup: updating stable"
 rustup update stable --no-self-update
 rustup component add rustfmt clippy --toolchain stable
-rustup target add wasm32-unknown-unknown --toolchain stable
+# wasm: the portable-crates CI job. windows-gnu: the clippy (windows) proxy,
+# the only local lint of `cfg(windows)` code.
+rustup target add wasm32-unknown-unknown x86_64-pc-windows-gnu --toolchain stable
 
 # ── CI tools as pinned prebuilt binaries ─────────────────────────────────────
 # Downloaded straight from each project's GitHub release. (cargo-binstall would
