@@ -49,3 +49,36 @@ Title: `[Feature]: Windows: implement TypeText (SendInput KEYEVENTF_UNICODE)`
 >
 > I can implement and test on Windows 11 (Notepad, browser, emoji and
 > non-Latin text).
+
+---
+
+## D. Discussion (Ideas): a shape for driving device outputs from scripts
+
+Category: Ideas. Title: `Driving device outputs from scripts: one api verb per capability?`
+
+> I'd like scripts to drive device *outputs*: a status image on an MX Creative
+> Keypad key, a Litra on when a call starts, a keyboard backlight flash, a haptic
+> tap when a build finishes. Before building anything I'd like to check the
+> intended shape.
+>
+> From reading the code and #2060 / #1821 / #1657, the pattern seems to be one
+> typed IPC method per capability, exposed as an `openlogi api <capability>`
+> subcommand: same JSON envelope, device IDs from `api devices`, no new socket
+> or listener. #2060's `api haptic` already follows it.
+>
+> Concretely:
+> 1. `api light` / `api backlight` / `api lighting` over the existing
+>    `set_light` / `set_backlight` / `set_lighting` calls. (Side note:
+>    `openlogi light` currently opens the HID device directly instead of going
+>    through the agent.)
+> 2. For the keypad, a transient per-key face override (image or text) with a
+>    clear/TTL, layered over the binding faces, plus
+>    `api keypad-face --device <id> --key <n> --image <file> | --clear`.
+>
+> Questions:
+> - Is "a typed `api` verb per output capability" the direction you want, or
+>   would you rather this wait for the peripheral/capability work in #1657?
+> - Should external overrides have shared lease semantics (owner, TTL, restore)
+>   across devices, or be decided per capability?
+>
+> I can implement and test on Windows 11 (keypad, MX Master 4, MX Keys Mini).
