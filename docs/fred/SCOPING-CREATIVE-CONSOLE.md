@@ -166,6 +166,59 @@ targets.
    not a competing PR.
 4. Optionally, post a Windows 11 test report on #1447 for Lock and Sleep.
 
+### Update 2026-11-05: macOS-named window actions on Windows
+
+Not Power User items, but the same problem and the same fix. The Navigation
+actions are macOS concepts that Windows maps to "their nearest Windows
+shortcut" (`openlogi-inject/src/inject/windows.rs:262-276`, master
+`4ea5b600`):
+
+| Action (macOS name) | What Windows does | Problem |
+|---|---|---|
+| Mission Control | Win+Tab (Task View) | macOS name for a Windows feature |
+| App Exposé | Win+Tab (the same line of code) | Exact duplicate of Mission Control; Windows has no per-app window spread |
+| Launchpad | Win key (Start menu) | macOS name |
+| Previous / Next Desktop | Win+Ctrl+← / → | Fine; Windows calls them desktops too |
+| Show Desktop | Win+D | Fine |
+| Lock Screen | synthetic Win+L | Name fine; Windows ignores a synthetic Win+L. #1447 / #1846 switch to `LockWorkStation()` |
+| Sleep | skipped | #1447 adds `SetSuspendState`; #1875 hides it meanwhile |
+
+**Defaults are affected too.** A new mouse gets Mission Control on the gesture
+button and on gesture-up, and App Exposé on gesture-click
+(`openlogi-core/src/binding/defaults.rs:77,113,117`). On Windows, two different
+default gestures therefore do exactly the same thing.
+
+**Upstream:** nothing Windows-specific found. The precedents:
+
+- **#1875:** `is_available_on(Host)` (hide) and `translation_key_on(Host)`
+  (rename per OS). Its naming table only has Linux rows: GNOME's Super key is
+  "Activities Overview", Launchpad is "Show Applications", and desktops are
+  "workspaces". For Linux it also changes the gesture-click default from App
+  Exposé to the Actions Ring.
+- **#1446** (merged) and **#1853** (open): the GNOME versions of these window
+  actions.
+- **#1437** (open): relabels Browser Back/Forward to "History Back/Forward"
+  in every locale. It keeps the locale keys and the stored action names, so
+  configs are unaffected. This is the precedent for renaming safely.
+
+**Suggested Windows rows for #1875's tables.** No new mechanism, a few locale
+strings, and no config or wire change:
+
+- `translation_key_on(Windows)`: Mission Control → "Task View", Launchpad →
+  "Start Menu".
+- `is_available_on(Windows)`: hide App Exposé, since it duplicates Task View.
+  Existing bindings keep working and show "(not available here)", as #1875
+  already does for Type Text.
+- **Ask the maintainer** for a distinct Windows gesture-click default, such as
+  the Actions Ring (as #1875 does for Linux) or Show Desktop. Defaults are a
+  product call.
+
+**Placement.** Raise it in the #1875 comment (draft A, point 3). If the author
+or maintainer wants #1875 to stay Linux-focused, it becomes a small follow-up PR
+on top of it: table rows, locale strings, a test. That's a good first code
+contribution, because every row can be verified on Windows by pressing the
+button.
+
 ---
 
 ## 3. External hooks and API — is `openlogi api` enough?

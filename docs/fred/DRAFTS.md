@@ -13,7 +13,7 @@ attribution.
 > Windows behaviour too (it hides Type Text, Run AppleScript and Sleep there),
 > so a Windows pass seems worth having alongside the `platform: linux` label.
 >
-> Two gaps I noticed while comparing the editors on current master:
+> Three gaps I noticed while comparing the editors on current master:
 >
 > 1. The Workflow step picker (`features/keyboard/editors.rs`) still offers
 >    Type Text and AppleScript steps, which are skipped on Windows. Would a
@@ -24,6 +24,14 @@ attribution.
 >    command. A shared Power User section filtered by your table could be a
 >    small follow-up after this lands, so every editor offers the same set per
 >    OS.
+> 3. Windows could use rows in your `translation_key_on` table too. On
+>    Windows, Mission Control and App Exposé both send Win+Tab (Task View), and
+>    Launchpad sends the Win key. So the picker could say "Task View" and
+>    "Start Menu" there, and hide App Exposé as a duplicate. That would also
+>    leave the default gesture-click and gesture-up doing the same thing on
+>    Windows, so maybe a different Windows click default, like you did for
+>    Linux? Happy to do this as a follow-up PR if you'd rather keep this one
+>    Linux-focused.
 >
 > I'd also like to implement Windows `TypeText` (`SendInput` with
 > `KEYEVENTF_UNICODE`), which would flip that cell of the Windows row. Is it
