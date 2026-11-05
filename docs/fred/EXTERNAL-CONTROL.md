@@ -172,6 +172,66 @@ What's missing, smallest first:
      not starve input capture or time out unrelated writes;
    - **discovery:** capabilities in `api devices` decide which verbs apply.
 
+### 4a. Prior art: how Logi Options+ plugins do it
+
+Researched 2026-11-05 from Logitech's Actions SDK docs (the same SDK as
+Loupedeck's).
+
+- **The device has one owner.** The *Logi Plugin Service*, a separate background
+  process, owns the hardware. Plugins (C#, or Node.js in beta) never write to the
+  keypad. This is the same split as OpenLogi's agent.
+- **Key images are pulled, not pushed.** A plugin overrides
+  `GetCommandImage(actionParameter, imageSize)` and returns a PNG or SVG. Classic
+  button images are 80×80 PNG. A `BitmapBuilder` composes a background image plus
+  drawn text, which is how counters and status text are made. When its state
+  changes, the plugin calls `ActionImageChanged()` for one action, or
+  `ActionImageChanged(null)` for every visible button. The service then calls
+  `GetCommandImage` again and pushes the result.
+- **There is no built-in animation.** The SDK docs have no API for animation,
+  frame rates, timelines or animated GIFs. Counters, countdowns and "animated"
+  plugins run their own timer and call `ActionImageChanged` each tick: every
+  frame is a redraw.
+  - The only frame-rate API found is in a third-party community SDK,
+    *LoupixDeck.PluginSdk*, whose host has a central scheduler with `TargetFps`
+    and `RenderAnimatedFrame`. That is not Logitech's.
+  - Loupedeck's support page "Animation & Effects" is about Adobe After Effects
+    shortcuts and is irrelevant.
+- **Haptics go through named events, not direct waveform calls.**
+  - A plugin declares events in YAML (`name`, `displayName`, e.g.
+    `periodic15min`, `buttonPress`) and raises them with
+    `PluginEvents.RaiseEvent(name)`.
+  - `events/extra/eventMapping.yaml` maps each event to a waveform, with a
+    `DEFAULT` and optional per-device overrides (`MX Master 4:
+    sharp_collision`). The plugin must declare the `HasHapticMapping`
+    capability.
+  - The design guidelines say: subtle waveforms for frequent events, intense
+    ones for important notifications, and don't fire too often.
+
+**What this means for OpenLogi:**
+
+- **Keypad.** The minimal design matches theirs: a way for a caller to set a
+  key's face (image or text), after which the existing key-display watcher
+  repaints only what changed. No animation engine is needed. Animation is "set it
+  again, often", with its ceiling set by the per-tile write-and-ack round trip.
+  That ceiling, plus process launch cost, is the argument for an `api` stdin
+  streaming mode if animation matters.
+- **Haptics.** #2060's `openlogi api haptic --waveform …` makes the *caller* pick
+  the waveform. Logitech's event indirection lets callers send a meaning
+  (`ci-failed`) while the *user's config* decides how it feels per device. This
+  is worth raising with the maintainer. It also generalises beyond haptics: one
+  named event could buzz the mouse *and* light a keypad key *and* flash the
+  backlight, configured once in `config.toml`. It would be a single
+  `openlogi api event <name>` verb rather than a verb per output, though it
+  needs care to stay "typed" in the #1657 sense: events would be declared in
+  config, not free-form.
+
+Sources:
+- [Logi Actions SDK docs](https://logitech.github.io/actions-sdk-docs/)
+- [Full documentation export (llms-full.txt)](https://logitech.github.io/actions-sdk-docs/llms-full.txt)
+- [Haptics overview](https://logitech.github.io/actions-sdk-docs/csharp/haptics/haptics-overview/)
+- [LoupixDeck.PluginSdk changelog](https://github.com/RadiatorTwo/LoupixDeck.PluginSdk/wiki/Changelog)
+- [Loupedeck support: Animation & Effects](https://support.loupedeck.com/animation-effects.html)
+
 ## 5. Open questions (for Fred, then the maintainer)
 
 1. Which of your use cases need **transient** effects (alert buzz, flash, status
@@ -181,6 +241,10 @@ What's missing, smallest first:
    animation (which argues for a streaming mode)?
 3. Would the maintainer accept `api keypad-face` before the keypad override exists
    in the GUI, or should the override first exist as a user-visible concept?
-4. Should "typed `api` verb per output capability, with shared lease semantics" be
+4. Per-output verbs (`api haptic`, `api keypad-face`, …) or named events mapped in
+   config (`api event ci-failed`, like Logitech's haptic event mapping), or both?
+   The second matches "send a meaning, let the user decide the feel" and spans
+   devices; the first is simpler and already started (#2060).
+5. Should "typed `api` verb per output capability, with shared lease semantics" be
    proposed as a GitHub Discussion before anyone codes it? A draft is in
    `DRAFTS.md` (section D). Nothing has been posted.
