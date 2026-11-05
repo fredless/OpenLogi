@@ -98,6 +98,74 @@ that can't work on Windows (Type text), and the keypad panel shows two.
 This is the minimal-surface fix in the repo's own idiom (single source of truth),
 already written. Re-implementing it would be duplicate work.
 
+### Update 2026-11-05: why the editors differ, and the core fix
+
+Re-checked on upstream master `4ea5b600`. Line numbers moved since `6466cd2`:
+the keyboard panel's list is now at `function_row.rs:1490`.
+
+**The difference is not platform logic.** The MX Master's editor has no Power
+User section on macOS either. Each editor grew its own list at a different
+time:
+
+| Editor | Power User items | Platform gating | Origin |
+|---|---|---|---|
+| Keyboard / keypad panel | all five, hard-coded (`features/keyboard/function_row.rs:1490`) | none | #344 (Aug 9), the F-row remapper, written before Windows mattered. The keypad inherited it because #1873 reuses the keyboard panel. |
+| Actions Ring slot editor | Open app, Type text, AppleScript, Run command (`features/action_ring/editor.rs:101-128`) | AppleScript hidden off macOS via `cfg!` (:112); Type text not | #1445 (Oct 17). Greptile flagged AppleScript, so only that one got gated. |
+| Mouse picker | Open app and Run command only, as shared single-field editors (`features/binding_editor.rs`: `application_editor`, `command_editor`) | none needed; both work everywhere | #2103 and #2124 (AprilNEA, Oct 28), added one at a time on request |
+| Workflow step picker | all five step kinds (`features/keyboard/editors.rs:332-348`) | none | — |
+
+**Root cause.** `Action::catalog()` deliberately excludes the power-user actions
+(`openlogi-core/src/binding/action.rs:164,174`). So every editor re-adds them by
+hand, with its own list and its own platform rule (or none). Two decisions have
+no single owner:
+
+- *which custom actions are offered*;
+- *which actions this OS can perform*.
+
+That's the "second copy" situation the repo's single-source-of-truth rule
+targets.
+
+**Upstream state of the per-OS gaps (2026-11-05):**
+
+| Item | Status |
+|---|---|
+| #1875 availability table | Open, no maintainer review; Greptile clean; labelled `platform: linux` although it changes Windows |
+| #1605 Linux Type text | Open, `needs: decision` (AprilNEA, Nov 4); Greptile 0/5 (blocks button handling, drops letters, layout issues) |
+| #1447 Windows Lock (`LockWorkStation`) + Sleep (`SetSuspendState`) | Approved by davidbudnick, waiting on AprilNEA; Lock hardware-confirmed by a #1727 reporter; fixes #1266 |
+| #1846 Windows Lock only | Same author, overlaps #1447; davidbudnick's approval dismissed by a force-push |
+| #1529 (merged) | AprilNEA moved script/workflow running into `inject.rs` over four per-OS hooks; that's why every OS has the same stub set |
+| #1361 / #2337 / #2301 (merged) | Windows Run command: no console flash, quotes kept, failures logged |
+| Windows Type text | **Unclaimed** |
+| AppleScript counterpart | Not proposed; Run command can already launch PowerShell |
+
+**Suggested core fix.** Small, no new surface, nothing keypad-specific:
+
+1. **One availability owner.** Land #1875, and extend it to Workflow steps (a
+   `WorkflowStep::is_available_on` beside it) so the step picker filters too.
+2. **One offer owner, one shared section.**
+   - A single list of power-user kinds (e.g. on `PowerUserKind`, which already
+     lives in `features/keyboard/editors.rs:41`).
+   - One shared Power User section, rendered by the mouse, keyboard/keypad and
+     Ring editors and filtered by (1). Each editor keeps only its layout
+     differences.
+   - Whether the mouse *should* gain Type text and Workflow is a product
+     question for the maintainer. Consistency argues yes, filtered per OS.
+3. **A guard**, per the repo's rule: an ast-grep rule beside the owner that
+   fails on new `cfg!(target_os …)` action gating in desktop editors and on
+   hand-built power-user lists outside the owner.
+4. **Shrink what's hidden.** Each OS gap closed (Windows Type text; #1447's
+   Lock/Sleep) becomes a one-line change to the availability table, not an edit
+   per editor.
+
+**Sequencing:**
+
+1. Comment on #1875 (draft A): offer a Windows test, point out the keypad and
+   Workflow gaps, and offer to rebase.
+2. Implement Windows Type text.
+3. Propose the shared Power User section (2–3 above) as a follow-up to #1875,
+   not a competing PR.
+4. Optionally, post a Windows 11 test report on #1447 for Lock and Sleep.
+
 ---
 
 ## 3. External hooks and API — is `openlogi api` enough?

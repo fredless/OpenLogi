@@ -6,20 +6,30 @@ attribution.
 
 ---
 
-## A. Comment on #1875 (offer to test on Windows)
+## A. Comment on #1875 (Windows test offer, editor gaps)
 
-> Hi! I'm on Windows 11 with an MX Creative Keypad, and noticed the same
-> thing from the Windows side: the keypad/keyboard Power User section offers
-> Type Text and Run AppleScript, and the Actions Ring editor offers Type Text,
-> but both are no-ops in `openlogi-inject` on Windows today.
+> Hi! I'm on Windows 11 with an MX Creative Keypad, an MX Master 4 and an MX
+> Keys Mini over Bolt, and I'd be glad to test this on Windows. It changes
+> Windows behaviour too (it hides Type Text, Run AppleScript and Sleep there),
+> so a Windows pass seems worth having alongside the `platform: linux` label.
 >
-> Happy to test this branch on Windows hardware once it's rebased (keypad +
-> MX Master 4 over Bolt). One gap I noticed: the Workflow step picker
-> (`features/keyboard/editors.rs`) still offers Type Text / AppleScript steps.
+> Two gaps I noticed while comparing the editors on current master:
 >
-> Separately, I'd like to implement Windows `TypeText` via `SendInput` +
-> `KEYEVENTF_UNICODE`, which would flip that row of `is_available_on`. Would
-> you prefer that land after this PR?
+> 1. The Workflow step picker (`features/keyboard/editors.rs`) still offers
+>    Type Text and AppleScript steps, which are skipped on Windows. Would a
+>    `WorkflowStep::is_available_on` next to `Action::is_available_on` fit?
+> 2. The editors still build their own Power User lists: the keyboard/keypad
+>    panel lists all five (`function_row.rs`), the Ring editor gates only
+>    AppleScript with `cfg!`, and the mouse picker offers Open app and Run
+>    command. A shared Power User section filtered by your table could be a
+>    small follow-up after this lands, so every editor offers the same set per
+>    OS.
+>
+> I'd also like to implement Windows `TypeText` (`SendInput` with
+> `KEYEVENTF_UNICODE`), which would flip that cell of the Windows row. Is it
+> better to land that after this PR?
+>
+> If the branch needs a rebase onto current master, I'm happy to help.
 
 ---
 
