@@ -6,7 +6,7 @@ attribution.
 
 ---
 
-## A. Comment on #1875 (Windows test offer, editor gaps)
+## A. Comment on #1875 (Windows test offer, editor gaps, overlap with #2422)
 
 > Hi! I'm on Windows 11 with an MX Creative Keypad, an MX Master 4 and an MX
 > Keys Mini over Bolt, and I'd be glad to test this on Windows. It changes
@@ -24,14 +24,16 @@ attribution.
 >    command. A shared Power User section filtered by your table could be a
 >    small follow-up after this lands, so every editor offers the same set per
 >    OS.
-> 3. Windows could use rows in your `translation_key_on` table too. On
->    Windows, Mission Control and App Exposé both send Win+Tab (Task View), and
->    Launchpad sends the Win key. So the picker could say "Task View" and
->    "Start Menu" there, and hide App Exposé as a duplicate. That would also
->    leave the default gesture-click and gesture-up doing the same thing on
->    Windows, so maybe a different Windows click default, like you did for
->    Linux? Happy to do this as a follow-up PR if you'd rather keep this one
->    Linux-focused.
+> 3. Heads-up on overlap: #2422 (opened Nov 6) also relabels Mission Control,
+>    Launchpad and the desktop actions per OS, adds the same four locale keys
+>    (`activities_overview`, `show_applications`, `previous_workspace`,
+>    `next_workspace`), and filters App Exposé, but with `cfg!` branches in
+>    `localized_action_label` instead of a table like your
+>    `translation_key_on`. Whichever lands second will conflict. #2422 also
+>    adds Windows names ("Task View", "Start Menu"), which would fit as
+>    `Host::Windows` rows here. And App Exposé could be hidden on Windows too,
+>    since it sends the same Win+Tab as Mission Control. Maybe worth agreeing
+>    with @marcinhosh on one home for this?
 >
 > I'd also like to implement Windows `TypeText` (`SendInput` with
 > `KEYEVENTF_UNICODE`), which would flip that cell of the Windows row. Is it
@@ -100,3 +102,29 @@ Category: Ideas. Title: `Driving device outputs from scripts: one api verb per c
 >   across devices, or be decided per capability?
 >
 > I can implement and test on Windows 11 (keypad, MX Master 4, MX Keys Mini).
+
+---
+
+## E. Comment on #2422 (overlap with #1875, Windows rows)
+
+> Nice to see Windows names here too ("Task View", "Start Menu"). I tried to
+> line this up with #1875, which is still open and adds a per-host table in
+> `openlogi-core` (`Action::translation_key_on(Host)` and
+> `Action::is_available_on(Host)`). The two PRs add the same four locale keys
+> and both filter App Exposé, so whichever lands second will conflict. Could
+> the labels and filtering here become rows in that table instead of `cfg!`
+> branches in `localized_action_label` and `action_rows_with`? Then the
+> pickers, the overlay and the Linux dispatcher all read one place.
+>
+> Two Windows notes, from Windows 11:
+> - App Exposé is still offered on Windows, but it sends the same Win+Tab as
+>   Mission Control (`inject/windows.rs`), so it's a duplicate there. Hiding it
+>   on Windows, as this PR does on GNOME, would make sense.
+> - The new gesture defaults apply on every OS, not just GNOME: Down moves
+>   from Show Desktop to Launchpad (the Start menu on Windows), and Left/Right
+>   from previous/next tab to previous/next desktop. Click moves from App
+>   Exposé to Mission Control, which on Windows changes nothing (both were
+>   already Win+Tab) but is a visible change on macOS. Was that intended
+>   beyond Linux?
+>
+> Happy to test the Windows side once there's a direction.

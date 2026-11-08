@@ -232,6 +232,33 @@ Sources:
 - [LoupixDeck.PluginSdk changelog](https://github.com/RadiatorTwo/LoupixDeck.PluginSdk/wiki/Changelog)
 - [Loupedeck support: Animation & Effects](https://support.loupedeck.com/animation-effects.html)
 
+### 4b. Update 2026-11-08: upstream changes since Nov 5
+
+Upstream master `aec0dee9`.
+
+- **`openlogi api` is unchanged:** still the same eight subcommands, so no
+  outputs, events or profiles.
+- **IPC protocol is now v46.** #1239 (G-keys) took it. #2060 (`api haptic`,
+  `Agent::play_haptic`) also claimed v46, so it needs renumbering before it can
+  land. There's still no maintainer comment on #2060. Greptile's Nov 4 review
+  adds that some event-haptic choices never play on Windows or Linux.
+- **#2451 (new request, `needs: decision`):** target a device *class* instead
+  of an ID, e.g. `openlogi api fn-lock --device keyboard --set on`, for
+  meeting-room logins. It's directly relevant to the "generic mechanism"
+  discussion. Discovery by capability or kind is the generic part, and a
+  class selector is the CLI-side expression of it. The reporter also
+  mentions "set light on for all keyboards" and webcam settings.
+- **#2430 (new request):** haptic taps on Haptic Sense panel gestures (MX
+  Master 4). It overlaps #2060's event haptics. It proposes a global toggle or
+  a per-binding `haptic = "<waveform>"`, which is an alternative to the named
+  event mapping noted in 4a.
+- **#2426 (merged):** `openlogi diag hidpp` calls any HID++ 2.0 feature with
+  raw parameters. It's a direct-hardware diagnostic, not an external control
+  path, but handy for probing outputs before building anything: the keypad's
+  `0x8040` brightness, more `0x19b0` waveforms, the Dialpad's `0x4610`.
+- **Unchanged:** #712, #1821, #1657, discussion #420 (Fred's haptic-daemon
+  question is still unanswered), #1341 / #2299.
+
 ## 5. Open questions (for Fred, then the maintainer)
 
 1. Which of your use cases need **transient** effects (alert buzz, flash, status

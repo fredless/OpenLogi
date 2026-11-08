@@ -219,6 +219,60 @@ on top of it: table rows, locale strings, a test. That's a good first code
 contribution, because every row can be verified on Windows by pressing the
 button.
 
+### Update 2026-11-08: what changed upstream since Nov 5
+
+Checked against upstream master `aec0dee9` (48 commits after `4ea5b600`) and the
+threads on 2026-11-08.
+
+**Still true on master:**
+- The keyboard/keypad Power User list is unchanged; it moved to
+  `features/keyboard/function_row.rs:1695` (G-key work, #1239/#1240).
+- On Windows, Type text and AppleScript are still stubs, Sleep is still
+  skipped, Lock is still a synthetic Win+L, and Mission Control and App Exposé
+  both send Win+Tab (`inject/windows.rs:269-311`).
+- The Ring editor still gates only AppleScript (`action_ring/editor.rs:112`).
+
+**#2422 now overlaps #1875 and our Windows rows.** marcinhosh, opened Nov 6,
+`needs: decision`, no maintainer comment.
+- It relabels per OS, including the Windows names from our suggestion:
+  Mission Control → "Task View" and Launchpad → "Start Menu" on Windows;
+  Activities Overview, Show Applications and Workspace on Linux.
+- It does this with `cfg!` branches in `ui/action.rs::localized_action_label`,
+  not #1875's `translation_key_on(Host)` table. It filters App Exposé with
+  another `cfg!` in `binding_editor.rs::action_rows_with` (Linux outside KDE
+  only), so App Exposé is still offered on Windows.
+- **Collision:** #1875 and #2422 add the same four locale keys
+  (`activities_overview`, `show_applications`, `previous_workspace`,
+  `next_workspace`). Whichever merges second conflicts.
+- It changes `default_gesture_binding` on every OS: Up/Click → Mission
+  Control, Down → Launchpad, Left/Right → Previous/Next Desktop (previously Up
+  Mission Control, Down Show Desktop, Left/Right tabs, Click App Exposé).
+- Greptile 4/5, with a P1: the new Down default breaks on KDE.
+- Our position (draft A point 3, draft E): one home for per-OS names and
+  availability (#1875's table), Windows rows there, App Exposé hidden on
+  Windows, and ask whether the default change was meant beyond Linux.
+
+**Lock / Sleep on Windows consolidated into #1447.**
+- AprilNEA closed #1846 on Nov 5 "to keep a single PR".
+- #1447 got `needs: decision` on Nov 6, and a force-push dismissed
+  davidbudnick's approval.
+- #1727 is the tracking issue; #2412 (Lock from the Actions Ring) was closed
+  as its duplicate: "on Windows the Lock Screen action is sent as a synthetic
+  Win+L, which Windows ignores".
+- A Windows 11 test report from Fred on #1447 (Lock and Sleep) is now the most
+  useful single contribution here. It's on the fork as `pr/1447`.
+
+**Keypad image fix #2322:** still open, no activity since Nov 3. AprilNEA's
+#2473 (Nov 8) restructures the same `PendingQueue` code (one lifecycle state
+per correlation key), so expect #2322 to need a rebase or rework on top of it.
+
+**Other:**
+- #2386: AprilNEA confirmed Previous/Next Desktop on Windows sends Win+Ctrl+←/→
+  "as designed"; the reporter's problem was a separate wheel issue.
+- #2416 / #2418 (merged): synthesized shortcuts no longer release a modifier
+  the user holds, including Windows held chords.
+- #1875, #1605, #2240 (Dialpad) and discussion #420: no maintainer movement.
+
 ---
 
 ## 3. External hooks and API — is `openlogi api` enough?
