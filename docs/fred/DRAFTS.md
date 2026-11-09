@@ -95,8 +95,12 @@ Category: Ideas. Title: `One API for external triggers: api JSON as the contract
 > 4. `watch`.
 > 5. `serve`.
 >
-> Each step is shippable. Direction ok, or would you rather this wait for
-> #1657's capability model? Happy to prototype on Windows.
+> Each step is shippable. Relation to #1657: this would be the external front
+> door onto its capabilities, not a competitor. Steps 1–2 don't depend on it,
+> and output commands would map 1:1 onto its typed capability families (light,
+> feedback, key display), so moving them later is a rename, not a redesign.
+> Direction ok, or would you rather this wait for #1657? Happy to prototype on
+> Windows.
 
 ---
 
