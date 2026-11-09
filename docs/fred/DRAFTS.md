@@ -48,22 +48,55 @@ Title: `[Feature]: Windows: implement TypeText (SendInput KEYEVENTF_UNICODE)`
 
 ---
 
-## D. Discussion (Ideas): device outputs from scripts
+## D. Discussion (Ideas): one API for external triggering
 
-Category: Ideas. Title: `Device outputs from scripts (keypad, haptics, lights)`
+Category: Ideas. Title: `One API for external triggers: api JSON as the contract, transports as adapters`
 
-> Would like scripts to use devices for signals: keypad key shows build status
-> or mute state, MX Master 4 taps when a job finishes, Litra on when a call
-> starts. Today `openlogi api` only changes settings; it can't buzz, light or
-> draw.
+> Would like one consistent way to trigger devices from outside (MX Master 4
+> haptic, keypad key status, Litra, backlight), not a new surface per feature.
+> Today `openlogi api` covers settings only; haptics are being added
+> separately (#2060), events too (#1821).
 >
-> #2060's `api haptic` looks like the pattern: one `api` command per output,
-> through the agent, nothing new running. Script changes should be temporary
-> (clear on timeout, layout comes back) and visible in the GUI.
+> Proposal: the `api` JSON envelope (`schema_version`, `ok`, `data`/`error`)
+> is the single public contract. Transports are thin adapters around one
+> dispatcher.
 >
-> Open questions: should scripts send events that config maps to effects
-> ("build failed" → tap + red key), or effects directly? And is this in scope
-> for OpenLogi? Happy to prototype/test on Windows.
+> 1. **One request type.** Derive `Deserialize` on the existing `ApiCommand`
+>    (`cmd/api.rs`) so argv and JSON produce the same typed request, and the
+>    one `match` that dispatches it stays the only dispatcher. No
+>    `execute(String, JSON)`; unknown commands are rejected.
+>    ```json
+>    {"id":7,"command":"haptic","device":"<id from api devices>","args":{"waveform":"damp_collision"}}
+>    {"id":7,"schema_version":1,"ok":true,"data":{"queued":true}}
+>    ```
+> 2. **Transports, in order:**
+>    - CLI (today, unchanged behaviour)
+>    - `openlogi api --stdin`: NDJSON requests in, replies out, one agent
+>      connection. Covers high-rate use (keypad animation, counters) with no
+>      listener.
+>    - later, opt-in `openlogi api serve --listen <unix socket | named pipe |
+>      127.0.0.1:port>`: its own process, an ordinary `ClientKind::Cli`-style
+>      agent client. The agent gains no listener; anything network-facing
+>      needs a token (and is off by default).
+> 3. **Outputs** are typed agent IPC methods, one per capability, appended
+>    to the wire as usual: haptic (#2060), light / backlight / lighting (IPC
+>    exists: `set_light`, `set_backlight`, `set_lighting`), keypad key face
+>    (new). Effects from scripts are temporary: a TTL or explicit clear, then
+>    the configured state comes back, and the GUI shows what's overridden.
+> 4. **Events** use the same envelope as a stream: `api watch` on stdout/stdin
+>    or the socket, over the existing `observe` long-poll (generalises #1821).
+> 5. **Addressing:** device IDs from `api devices`, plus a selector by kind or
+>    capability (#2451: `--device keyboard`).
+>
+> Phasing:
+> 1. Refactor to request type + dispatcher, no behaviour change.
+> 2. `--stdin`.
+> 3. Output commands.
+> 4. `watch`.
+> 5. `serve`.
+>
+> Each step is shippable. Direction ok, or would you rather this wait for
+> #1657's capability model? Happy to prototype on Windows.
 
 ---
 
