@@ -6,40 +6,16 @@ attribution.
 
 ---
 
-## A. Comment on #1875 (Windows test offer, editor gaps, overlap with #2422)
+## A. Comment on #1875 (optional, short; Fred commented on #2422 instead)
 
-> Hi! I'm on Windows 11 with an MX Creative Keypad, an MX Master 4 and an MX
-> Keys Mini over Bolt, and I'd be glad to test this on Windows. It changes
-> Windows behaviour too (it hides Type Text, Run AppleScript and Sleep there),
-> so a Windows pass seems worth having alongside the `platform: linux` label.
->
-> Three gaps I noticed while comparing the editors on current master:
->
-> 1. The Workflow step picker (`features/keyboard/editors.rs`) still offers
->    Type Text and AppleScript steps, which are skipped on Windows. Would a
->    `WorkflowStep::is_available_on` next to `Action::is_available_on` fit?
-> 2. The editors still build their own Power User lists: the keyboard/keypad
->    panel lists all five (`function_row.rs`), the Ring editor gates only
->    AppleScript with `cfg!`, and the mouse picker offers Open app and Run
->    command. A shared Power User section filtered by your table could be a
->    small follow-up after this lands, so every editor offers the same set per
->    OS.
-> 3. Heads-up on overlap: #2422 (opened Nov 6) also relabels Mission Control,
->    Launchpad and the desktop actions per OS, adds the same four locale keys
->    (`activities_overview`, `show_applications`, `previous_workspace`,
->    `next_workspace`), and filters App Exposé, but with `cfg!` branches in
->    `localized_action_label` instead of a table like your
->    `translation_key_on`. Whichever lands second will conflict. #2422 also
->    adds Windows names ("Task View", "Start Menu"), which would fit as
->    `Host::Windows` rows here. And App Exposé could be hidden on Windows too,
->    since it sends the same Win+Tab as Mission Control. Maybe worth agreeing
->    with @marcinhosh on one home for this?
->
-> I'd also like to implement Windows `TypeText` (`SendInput` with
-> `KEYEVENTF_UNICODE`), which would flip that cell of the Windows row. Is it
-> better to land that after this PR?
->
-> If the branch needs a rebase onto current master, I'm happy to help.
+Context (2026-11-09): #1875 is 349 commits behind master and conflicts in 5
+files (`binding_editor.rs`, `function_row.rs`, `services/i18n/tests.rs`,
+`inject/linux.rs`, overlay `ring.rs`). No maintainer review since Oct 17.
+
+> Still interested in this one? It now conflicts with master, and #2422 adds
+> overlapping labels and App Exposé filtering (commented there). Happy to test
+> on Windows if it gets rebased. Gap I noticed: Workflow step picker still
+> offers Type Text/AppleScript steps on Windows.
 
 ---
 
