@@ -6,16 +6,16 @@ attribution.
 
 ---
 
-## A. Comment on #1875 (optional, short; Fred commented on #2422 instead)
+## A. Comment on #1875 (POSTED by Fred, 2026-11-09, his wording)
 
-Context (2026-11-09): #1875 is 349 commits behind master and conflicts in 5
-files (`binding_editor.rs`, `function_row.rs`, `services/i18n/tests.rs`,
-`inject/linux.rs`, overlay `ring.rs`). No maintainer review since Oct 17.
+Context: #1875 was 349 commits behind master and conflicted in 5 files
+(`binding_editor.rs`, `function_row.rs`, `services/i18n/tests.rs`,
+`inject/linux.rs`, overlay `ring.rs`); no maintainer review since Oct 17.
 
 > Still interested in this one? It now conflicts with master, and #2422 adds
 > overlapping labels and App Exposé filtering (commented there). Happy to test
-> on Windows if it gets rebased. Gap I noticed: Workflow step picker still
-> offers Type Text/AppleScript steps on Windows.
+> on Windows if it gets rebased. But also, a gap I noticed: workflow step picker
+> still offers Type Texmat/AppleScript steps on Windows.
 
 ---
 
