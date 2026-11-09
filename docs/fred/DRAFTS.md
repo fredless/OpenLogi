@@ -72,36 +72,62 @@ Title: `[Feature]: Windows: implement TypeText (SendInput KEYEVENTF_UNICODE)`
 
 ---
 
-## D. Discussion (Ideas): a shape for driving device outputs from scripts
+## D. Discussion (Ideas): letting your devices tell you things
 
-Category: Ideas. Title: `Driving device outputs from scripts: one api verb per capability?`
+Category: Ideas. Title: `Letting scripts use your devices to tell you things (keypad, haptics, lights)`
 
-> I'd like scripts to drive device *outputs*: a status image on an MX Creative
-> Keypad key, a Litra on when a call starts, a keyboard backlight flash, a haptic
-> tap when a build finishes. Before building anything I'd like to check the
-> intended shape.
+> A few moments I'd love OpenLogi to handle:
 >
-> From reading the code and #2060 / #1821 / #1657, the pattern seems to be one
-> typed IPC method per capability, exposed as an `openlogi api <capability>`
-> subcommand: same JSON envelope, device IDs from `api devices`, no new socket
-> or listener. #2060's `api haptic` already follows it.
+> - **A long build finishes while I'm in another window.** My MX Master 4
+>   gives a short double tap. If it failed, the CI key on my Creative Keypad
+>   turns red with an ✗.
+> - **I join a call.** My Litra comes on, and the keypad's mic key shows
+>   whether I'm muted, updating as I toggle it.
+> - **I'm presenting.** One keypad key counts down the minutes I have left.
+> - **I log in to a shared meeting-room PC.** Fn-lock is on for whatever
+>   keyboard is plugged in (#2451 asks for this one).
 >
-> Concretely:
-> 1. `api light` / `api backlight` / `api lighting` over the existing
->    `set_light` / `set_backlight` / `set_lighting` calls. (Side note:
->    `openlogi light` currently opens the HID device directly instead of going
->    through the agent.)
-> 2. For the keypad, a transient per-key face override (image or text) with a
->    clear/TTL, layered over the binding faces, plus
->    `api keypad-face --device <id> --key <n> --image <file> | --clear`.
+> What these have in common: something outside OpenLogi knows an event
+> happened, and the device I'm already touching is the nicest place to notice
+> it. Today a script can change settings through `openlogi api`, but it can't
+> buzz, light up or draw anything.
 >
-> Questions:
-> - Is "a typed `api` verb per output capability" the direction you want, or
->   would you rather this wait for the peripheral/capability work in #1657?
-> - Should external overrides have shared lease semantics (owner, TTL, restore)
->   across devices, or be decided per capability?
+> How I'd hope it feels to use:
 >
-> I can implement and test on Windows 11 (keypad, MX Master 4, MX Keys Mini).
+> - **I decide how things feel, not the script.** A script says what happened
+>   ("build failed"), and my OpenLogi settings say what that looks or feels
+>   like on each device: a tap on the mouse, a red key, both, or nothing.
+>   Logitech's own plugin SDK does haptics this way: plugins raise named
+>   events and a mapping picks the waveform per device.
+> - **Nothing gets stuck.** Anything a script puts on a key or light is
+>   temporary. It clears on its own after a while, or when the script says
+>   so, and my configured layout comes back. A crashed script can't leave a
+>   key red forever.
+> - **I can see what's going on.** If a script is currently using a key, the
+>   OpenLogi window shows it, so I'm never confused about why a key looks
+>   different.
+> - **Same on every computer.** The same script line works on macOS, Windows
+>   and Linux, from a shell, PowerShell, a Stream Deck button or a Claude Code
+>   hook.
+> - **Nothing new running.** No extra background service, port or plugin
+>   host; when no script calls it, it costs nothing.
+>
+> Under the hood I think this fits what's already there: one more
+> `openlogi api` command per kind of output (#2060's `api haptic` is the first),
+> going through the agent like everything else. I haven't built anything yet.
+>
+> Questions before anyone does:
+>
+> 1. Should scripts send *events* that my settings map to effects ("build
+>    failed"), or ask for *effects* directly ("double tap", "make key 3 red")?
+>    Or effects first, with events added later?
+> 2. When a script takes over a keypad key, how long should it last by
+>    default, and what should the OpenLogi window show for it?
+> 3. Does this belong in OpenLogi at all, or is it better left to other tools
+>    as long as OpenLogi exposes the basics?
+>
+> I'm on Windows 11 with an MX Creative Keypad, MX Master 4 and MX Keys Mini,
+> and happy to prototype and test whichever direction you prefer.
 
 ---
 
