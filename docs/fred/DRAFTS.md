@@ -72,85 +72,34 @@ Title: `[Feature]: Windows: implement TypeText (SendInput KEYEVENTF_UNICODE)`
 
 ---
 
-## D. Discussion (Ideas): letting your devices tell you things
+## D. Discussion (Ideas): device outputs from scripts
 
-Category: Ideas. Title: `Letting scripts use your devices to tell you things (keypad, haptics, lights)`
+Category: Ideas. Title: `Device outputs from scripts (keypad, haptics, lights)`
 
-> A few moments I'd love OpenLogi to handle:
+> Would like scripts to use devices for signals: keypad key shows build status
+> or mute state, MX Master 4 taps when a job finishes, Litra on when a call
+> starts. Today `openlogi api` only changes settings; it can't buzz, light or
+> draw.
 >
-> - **A long build finishes while I'm in another window.** My MX Master 4
->   gives a short double tap. If it failed, the CI key on my Creative Keypad
->   turns red with an ✗.
-> - **I join a call.** My Litra comes on, and the keypad's mic key shows
->   whether I'm muted, updating as I toggle it.
-> - **I'm presenting.** One keypad key counts down the minutes I have left.
-> - **I log in to a shared meeting-room PC.** Fn-lock is on for whatever
->   keyboard is plugged in (#2451 asks for this one).
+> #2060's `api haptic` looks like the pattern: one `api` command per output,
+> through the agent, nothing new running. Script changes should be temporary
+> (clear on timeout, layout comes back) and visible in the GUI.
 >
-> What these have in common: something outside OpenLogi knows an event
-> happened, and the device I'm already touching is the nicest place to notice
-> it. Today a script can change settings through `openlogi api`, but it can't
-> buzz, light up or draw anything.
->
-> How I'd hope it feels to use:
->
-> - **I decide how things feel, not the script.** A script says what happened
->   ("build failed"), and my OpenLogi settings say what that looks or feels
->   like on each device: a tap on the mouse, a red key, both, or nothing.
->   Logitech's own plugin SDK does haptics this way: plugins raise named
->   events and a mapping picks the waveform per device.
-> - **Nothing gets stuck.** Anything a script puts on a key or light is
->   temporary. It clears on its own after a while, or when the script says
->   so, and my configured layout comes back. A crashed script can't leave a
->   key red forever.
-> - **I can see what's going on.** If a script is currently using a key, the
->   OpenLogi window shows it, so I'm never confused about why a key looks
->   different.
-> - **Same on every computer.** The same script line works on macOS, Windows
->   and Linux, from a shell, PowerShell, a Stream Deck button or a Claude Code
->   hook.
-> - **Nothing new running.** No extra background service, port or plugin
->   host; when no script calls it, it costs nothing.
->
-> Under the hood I think this fits what's already there: one more
-> `openlogi api` command per kind of output (#2060's `api haptic` is the first),
-> going through the agent like everything else. I haven't built anything yet.
->
-> Questions before anyone does:
->
-> 1. Should scripts send *events* that my settings map to effects ("build
->    failed"), or ask for *effects* directly ("double tap", "make key 3 red")?
->    Or effects first, with events added later?
-> 2. When a script takes over a keypad key, how long should it last by
->    default, and what should the OpenLogi window show for it?
-> 3. Does this belong in OpenLogi at all, or is it better left to other tools
->    as long as OpenLogi exposes the basics?
->
-> I'm on Windows 11 with an MX Creative Keypad, MX Master 4 and MX Keys Mini,
-> and happy to prototype and test whichever direction you prefer.
+> Open questions: should scripts send events that config maps to effects
+> ("build failed" → tap + red key), or effects directly? And is this in scope
+> for OpenLogi? Happy to prototype/test on Windows.
 
 ---
 
-## E. Comment on #2422 (overlap with #1875, Windows rows)
+## E. Comment on #2422 (POSTED by Fred, 2026-11-08, his wording)
 
-> Nice to see Windows names here too ("Task View", "Start Menu"). I tried to
-> line this up with #1875, which is still open and adds a per-host table in
-> `openlogi-core` (`Action::translation_key_on(Host)` and
-> `Action::is_available_on(Host)`). The two PRs add the same four locale keys
-> and both filter App Exposé, so whichever lands second will conflict. Could
-> the labels and filtering here become rows in that table instead of `cfg!`
-> branches in `localized_action_label` and `action_rows_with`? Then the
-> pickers, the overlay and the Linux dispatcher all read one place.
->
-> Two Windows notes, from Windows 11:
-> - App Exposé is still offered on Windows, but it sends the same Win+Tab as
->   Mission Control (`inject/windows.rs`), so it's a duplicate there. Hiding it
->   on Windows, as this PR does on GNOME, would make sense.
-> - The new gesture defaults apply on every OS, not just GNOME: Down moves
->   from Show Desktop to Launchpad (the Start menu on Windows), and Left/Right
->   from previous/next tab to previous/next desktop. Click moves from App
->   Exposé to Mission Control, which on Windows changes nothing (both were
->   already Win+Tab) but is a visible change on macOS. Was that intended
->   beyond Linux?
->
-> Happy to test the Windows side once there's a direction.
+> thanks for dropping Windows function names in here too! Trying line this up
+> with #1875, which adds a per-host table in openlogi-core. These two both add
+> the same four OS keys and both filter App Exposé, so conflict. Could the
+> labels and filtering here become rows in the #1875 table instead of cfg!
+> branches in localized_action_label and action_rows_with? pickers, overlay and
+> dispatcher could then all read one place.
+
+Not raised yet (candidates for a follow-up): App Exposé still offered on
+Windows (duplicates Task View); the gesture-default change applies on every OS,
+not just GNOME.
