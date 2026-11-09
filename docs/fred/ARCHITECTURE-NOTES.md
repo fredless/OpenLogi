@@ -130,7 +130,7 @@ truly Windows-only.
 The core Windows fact: **Windows splits one USB HID device into one handle per
 top-level collection, and each handle accepts only the reports its collection
 declares.** Write the wrong report to the wrong handle → `ERROR_INVALID_FUNCTION`.
-That was #2281.
+That was [#2281](https://github.com/AprilNEA/OpenLogi/issues/2281).
 
 Your keypad (`046d:c354`) as Windows sees it:
 
@@ -172,7 +172,7 @@ COL01–03 back into one logical channel:
 > **Rust note — async drop-cancellation.** In Rust, dropping a future cancels it
 > at its last `.await`. That's how "race N reads, keep the winner" works without
 > explicit cancel calls — and why the comment about the overlapped buffer
-> surviving the drop is load-bearing. The same property is behind #2322's second
+> surviving the drop is load-bearing. The same property is behind [#2322](https://github.com/AprilNEA/OpenLogi/pull/2322)'s second
 > commit (§5).
 
 `windows.rs` is compiled under `cfg(any(windows, test))` (`transport.rs:202`), so
@@ -198,7 +198,7 @@ Linux; the actual Win32 calls only compile on Windows.
    request A could be mistaken for request B's answer.
 3. The report is written; the caller races the reply against
    `SEND_RESPONSE_TIMEOUT` = **5 s** (`channel.rs:82`). That 5 s is exactly the
-   gap you saw in #2281 between the lost `getFeature` and `Channel(Timeout)`.
+   gap you saw in [#2281](https://github.com/AprilNEA/OpenLogi/issues/2281) between the lost `getFeature` and `Channel(Timeout)`.
 4. If the caller gives up (timeout or drop), the request is *abandoned*
    (`abandon`, `pending.rs:131`) and its key stays reserved for the grace period.
 
@@ -212,7 +212,7 @@ bytes; HID++ ones as `raw report received … payload=[…]` (:911).
 **Raw writes** (`write_raw_report`, :704, up to 4095 bytes, :77) bypass all of
 the above: no key, no reply matching. Keypad images use them.
 
-### The #2322 delta (not on master yet; local ref `pr-2322`)
+### The [#2322](https://github.com/AprilNEA/OpenLogi/pull/2322) delta (not on master yet; local ref `pr-2322`)
 
 `git diff master...pr-2322` — 6 files. The problem: the keypad firmware drops a
 HID++ request that is in flight when an image report arrives. The fix adds a
@@ -258,7 +258,7 @@ third reason for a request to park:
   `direct_identity_kind` (`inventory/mappings.rs:109`) claims it as `Numpad` from
   its USB ID. The Dialpad's "headset" label comes from the Bolt register kind
   nibble `0x0d` (`openlogi-hidpp/src/receiver/bolt/event.rs:332`), confirmed by
-  AprilNEA in #2240; a Dialpad identity entry is the planned fix.
+  AprilNEA in [#2240](https://github.com/AprilNEA/OpenLogi/issues/2240); a Dialpad identity entry is the planned fix.
 - The **probe cache** (`openlogi-hid/src/probe_cache.rs:15`) persists probe
   results to `probe-cache.json`, so a warm start may *not* re-read the feature
   table — relevant when you hunt for `feature` trace lines in a log.
@@ -376,7 +376,7 @@ daily-rotated `agent.<date>.log` (7 kept) in the state dir
 | Target | Section | You'll see |
 |---|---|---|
 | `hidpp::channel` | §5 | `hidpp request dev= feat= func=`, `raw report received … payload=[…]`, `report not HID++ — dropped` (trace) |
-| `hidpp::channel::pending` | §5 | `hidpp response` / `hidpp no response error=Timeout`; with #2322, pause/park lines |
+| `hidpp::channel::pending` | §5 | `hidpp response` / `hidpp no response error=Timeout`; with [#2322](https://github.com/AprilNEA/OpenLogi/pull/2322), pause/park lines |
 | `hidpp::device` | §6 | `enumerating feature table`, `feature index= slot= id=0x…` |
 | `openlogi_hid::transport[::windows]` | §3–4 | opens, collection pairing, disconnects |
 | `openlogi_device::inventory[::probe::*]` | §6 | probe results, `DeviceType read failed` (harmless on the keypad) |

@@ -6,9 +6,9 @@ attribution.
 
 ---
 
-## A. Comment on #1875 (POSTED by Fred, 2026-11-09, his wording)
+## A. Comment on [#1875](https://github.com/AprilNEA/OpenLogi/pull/1875) (POSTED by Fred, 2026-11-09, his wording)
 
-Context: #1875 was 349 commits behind master and conflicted in 5 files
+Context: [#1875](https://github.com/AprilNEA/OpenLogi/pull/1875) was 349 commits behind master and conflicted in 5 files
 (`binding_editor.rs`, `function_row.rs`, `services/i18n/tests.rs`,
 `inject/linux.rs`, overlay `ring.rs`); no maintainer review since Oct 17.
 
@@ -19,7 +19,7 @@ Context: #1875 was 349 commits behind master and conflicted in 5 files
 
 ---
 
-## B. Heads-up to AlexanderYW (where: a comment on #1873, or wherever he prefers)
+## B. Heads-up to AlexanderYW (where: a comment on [#1873](https://github.com/AprilNEA/OpenLogi/pull/1873), or wherever he prefers)
 
 > Hey Alexander, thanks for the keypad work — it's running on Windows now
 > after #2283/#2322. I'm planning to look at Windows parity for the Power
@@ -100,7 +100,7 @@ Category: Ideas. Title: `One API for external triggers: api JSON as the contract
 
 ---
 
-## E. Comment on #2422 (POSTED by Fred, 2026-11-08, his wording)
+## E. Comment on [#2422](https://github.com/AprilNEA/OpenLogi/pull/2422) (POSTED by Fred, 2026-11-08, his wording)
 
 > thanks for dropping Windows function names in here too! Trying line this up
 > with #1875, which adds a per-host table in openlogi-core. These two both add
