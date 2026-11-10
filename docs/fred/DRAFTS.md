@@ -48,12 +48,13 @@ Title: `[Feature]: Windows: implement TypeText (SendInput KEYEVENTF_UNICODE)`
 
 ---
 
-## D. Discussion (Ideas): one API for external triggering
+## D. Discussion (Ideas): one API for external triggers and events
 
-Category: Ideas. Title: `One API for external triggers: api JSON as the contract, transports as adapters`
+Category: Ideas. Title: `One API for external triggers and events: api JSON as the contract, transports as adapters`
 
 > Would like one consistent way to trigger devices from outside (MX Master 4
-> haptic, keypad key status, Litra, backlight), not a new surface per feature.
+> haptic, keypad key status, Litra, backlight) and to watch device events,
+> not a new surface per feature.
 > Today `openlogi api` covers settings only; haptics are being added
 > separately ([#2060](https://github.com/AprilNEA/OpenLogi/pull/2060)), events too ([#1821](https://github.com/AprilNEA/OpenLogi/pull/1821)).
 >
