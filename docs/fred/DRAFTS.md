@@ -22,8 +22,8 @@ Context: [#1875](https://github.com/AprilNEA/OpenLogi/pull/1875) was 349 commits
 ## B. Heads-up to AlexanderYW (where: a comment on [#1873](https://github.com/AprilNEA/OpenLogi/pull/1873), or wherever he prefers)
 
 > Hey Alexander, thanks for the keypad work — it's running on Windows now
-> after #2283/#2322. I'm planning to look at Windows parity for the Power
-> User actions (Type Text via SendInput) and help test #1875, nothing
+> after [#2283](https://github.com/AprilNEA/OpenLogi/pull/2283)/[#2322](https://github.com/AprilNEA/OpenLogi/pull/2322). I'm planning to look at Windows parity for the Power
+> User actions (Type Text via SendInput) and help test [#1875](https://github.com/AprilNEA/OpenLogi/pull/1875), nothing
 > keypad-specific. If you're working on keypad features next, what's on your
 > list? Happy to test them on Windows so we don't overlap.
 
@@ -41,7 +41,7 @@ Title: `[Feature]: Windows: implement TypeText (SendInput KEYEVENTF_UNICODE)`
 > Proposal: send each UTF-16 code unit as a `KEYEVENTF_UNICODE` key down/up
 > pair through `SendInput` (surrogate pairs as two units), going through
 > the shared `with_held_modifiers` helper the macOS path uses. Then mark `TypeText` available on Windows
-> in #1875's table.
+> in [#1875](https://github.com/AprilNEA/OpenLogi/pull/1875)'s table.
 >
 > I can implement and test on Windows 11 (Notepad, browser, emoji and
 > non-Latin text).
@@ -55,7 +55,7 @@ Category: Ideas. Title: `One API for external triggers: api JSON as the contract
 > Would like one consistent way to trigger devices from outside (MX Master 4
 > haptic, keypad key status, Litra, backlight), not a new surface per feature.
 > Today `openlogi api` covers settings only; haptics are being added
-> separately (#2060), events too (#1821).
+> separately ([#2060](https://github.com/AprilNEA/OpenLogi/pull/2060)), events too ([#1821](https://github.com/AprilNEA/OpenLogi/pull/1821)).
 >
 > Proposal: the `api` JSON envelope (`schema_version`, `ok`, `data`/`error`)
 > is the single public contract. Transports are thin adapters around one
@@ -79,14 +79,14 @@ Category: Ideas. Title: `One API for external triggers: api JSON as the contract
 >      agent client. The agent gains no listener; anything network-facing
 >      needs a token (and is off by default).
 > 3. **Outputs** are typed agent IPC methods, one per capability, appended
->    to the wire as usual: haptic (#2060), light / backlight / lighting (IPC
+>    to the wire as usual: haptic ([#2060](https://github.com/AprilNEA/OpenLogi/pull/2060)), light / backlight / lighting (IPC
 >    exists: `set_light`, `set_backlight`, `set_lighting`), keypad key face
 >    (new). Effects from scripts are temporary: a TTL or explicit clear, then
 >    the configured state comes back, and the GUI shows what's overridden.
 > 4. **Events** use the same envelope as a stream: `api watch` on stdout/stdin
->    or the socket, over the existing `observe` long-poll (generalises #1821).
+>    or the socket, over the existing `observe` long-poll (generalises [#1821](https://github.com/AprilNEA/OpenLogi/pull/1821)).
 > 5. **Addressing:** device IDs from `api devices`, plus a selector by kind or
->    capability (#2451: `--device keyboard`).
+>    capability ([#2451](https://github.com/AprilNEA/OpenLogi/issues/2451): `--device keyboard`).
 >
 > Phasing:
 > 1. Refactor to request type + dispatcher, no behaviour change.
@@ -95,11 +95,11 @@ Category: Ideas. Title: `One API for external triggers: api JSON as the contract
 > 4. `watch`.
 > 5. `serve`.
 >
-> Each step is shippable. Relation to #1657: this would be the external front
+> Each step is shippable. Relation to [#1657](https://github.com/AprilNEA/OpenLogi/pull/1657): this would be the external front
 > door onto its capabilities, not a competitor. Steps 1–2 don't depend on it,
 > and output commands would map 1:1 onto its typed capability families (light,
 > feedback, key display), so moving them later is a rename, not a redesign.
-> Direction ok, or would you rather this wait for #1657? Happy to prototype on
+> Direction ok, or would you rather this wait for [#1657](https://github.com/AprilNEA/OpenLogi/pull/1657)? Happy to prototype on
 > Windows.
 
 ---
