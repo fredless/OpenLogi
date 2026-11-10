@@ -261,6 +261,8 @@ Upstream master `aec0dee9`.
 
 ## 5. Open questions (for Fred, then the maintainer)
 
+Posted for maintainer input on 2026-11-10 as [Discussion #2505](https://github.com/AprilNEA/OpenLogi/discussions/2505) ("One API schema for external triggers and events"): existing `api` envelope as the single contract, one dispatcher, transports as adapters (CLI, `--stdin`, later an opt-in listener), phased, aligned with [#1657](https://github.com/AprilNEA/OpenLogi/pull/1657).
+
 1. Which of your use cases need **transient** effects (alert buzz, flash, status
    tile) versus **setting changes** (light on for the meeting)? The answer decides
    whether "lease/override" semantics are needed beyond the keypad.

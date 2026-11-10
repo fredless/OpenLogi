@@ -50,6 +50,8 @@ Title: `[Feature]: Windows: implement TypeText (SendInput KEYEVENTF_UNICODE)`
 
 ## D. Discussion (Ideas): one API for external triggers and events
 
+**POSTED by Fred, 2026-11-10, as [Discussion #2505](https://github.com/AprilNEA/OpenLogi/discussions/2505)** (his final wording is there; the text below is the earlier draft).
+
 Category: Ideas. Title: `One API for external triggers and events: api JSON as the contract, transports as adapters`
 
 > Would like one consistent way to trigger devices from outside (MX Master 4
